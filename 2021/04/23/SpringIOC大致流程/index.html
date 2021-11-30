@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="zh"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><meta><title>SpringIOC大致流程 - zmm&#039;s blog</title><link rel="manifest" href="/manifest.json"><meta name="application-name" content="zhaommmmomo"><meta name="msapplication-TileImage" content="/img/logo.jpg"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="zhaommmmomo"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="description" content="是什么？​    官方文档的解释是：IoC也称为依赖注入（DI）。在此过程中，对象仅通过构造函数参数，工厂方法的参数或在构造或从工厂方法返回后在对象实例上设置的属性来定义其依赖项（即，与它们一起使用的其他对象） 。然后，容器在创建bean时注入那些依赖项。从本质上讲，此过程是通过使用类的直接构造或诸如服务定位器模式之类的机制来控制其依赖关系的实例化或位置的Bean本身的逆过程（因此，其名称为Con"><meta property="og:type" content="blog"><meta property="og:title" content="SpringIOC大致流程"><meta property="og:url" content="http://zhaommmmomo.cn/2021/04/23/SpringIOC%E5%A4%A7%E8%87%B4%E6%B5%81%E7%A8%8B/"><meta property="og:site_name" content="zmm&#039;s blog"><meta property="og:description" content="是什么？​    官方文档的解释是：IoC也称为依赖注入（DI）。在此过程中，对象仅通过构造函数参数，工厂方法的参数或在构造或从工厂方法返回后在对象实例上设置的属性来定义其依赖项（即，与它们一起使用的其他对象） 。然后，容器在创建bean时注入那些依赖项。从本质上讲，此过程是通过使用类的直接构造或诸如服务定位器模式之类的机制来控制其依赖关系的实例化或位置的Bean本身的逆过程（因此，其名称为Con"><meta property="og:locale" content="zh_CN"><meta property="og:image" content="https://img-blog.csdnimg.cn/2021042312284549.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3ptbV9fMTM3NzQ0NTI5Mg==,size_16,color_FFFFFF,t_70#pic_center"><meta property="og:image" content="https://img-blog.csdnimg.cn/20210423122922215.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3ptbV9fMTM3NzQ0NTI5Mg==,size_16,color_FFFFFF,t_70#pic_center"><meta property="og:image" content="https://img-blog.csdnimg.cn/20210423122941651.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3ptbV9fMTM3NzQ0NTI5Mg==,size_16,color_FFFFFF,t_70#pic_center"><meta property="og:image" content="https://img-blog.csdnimg.cn/202104231229564.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3ptbV9fMTM3NzQ0NTI5Mg==,size_16,color_FFFFFF,t_70#pic_center"><meta property="og:image" content="https://img-blog.csdnimg.cn/20210423123011347.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3ptbV9fMTM3NzQ0NTI5Mg==,size_16,color_FFFFFF,t_70#pic_center"><meta property="og:image" content="https://img-blog.csdnimg.cn/20210423123024928.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3ptbV9fMTM3NzQ0NTI5Mg==,size_16,color_FFFFFF,t_70#pic_center"><meta property="og:image" content="https://img-blog.csdnimg.cn/20210423123038255.png#pic_center"><meta property="og:image" content="https://img-blog.csdnimg.cn/20210423123102181.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3ptbV9fMTM3NzQ0NTI5Mg==,size_16,color_FFFFFF,t_70#pic_center"><meta property="og:image" content="https://img-blog.csdnimg.cn/20210423123124440.png#pic_center"><meta property="og:image" content="https://img-blog.csdnimg.cn/20210423123136320.png#pic_center"><meta property="og:image" content="https://img-blog.csdnimg.cn/20210423123153275.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3ptbV9fMTM3NzQ0NTI5Mg==,size_16,color_FFFFFF,t_70#pic_center"><meta property="og:image" content="https://img-blog.csdnimg.cn/2021042312342942.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3ptbV9fMTM3NzQ0NTI5Mg==,size_16,color_FFFFFF,t_70#pic_center"><meta property="og:image" content="https://img-blog.csdnimg.cn/20210423123441986.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3ptbV9fMTM3NzQ0NTI5Mg==,size_16,color_FFFFFF,t_70#pic_center"><meta property="og:image" content="https://img-blog.csdnimg.cn/20210423123455791.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3ptbV9fMTM3NzQ0NTI5Mg==,size_16,color_FFFFFF,t_70#pic_center"><meta property="og:image" content="https://img-blog.csdnimg.cn/20210423123506408.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3ptbV9fMTM3NzQ0NTI5Mg==,size_16,color_FFFFFF,t_70#pic_center"><meta property="og:image" content="https://img-blog.csdnimg.cn/20210423123521810.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3ptbV9fMTM3NzQ0NTI5Mg==,size_16,color_FFFFFF,t_70#pic_center"><meta property="og:image" content="https://img-blog.csdnimg.cn/20210423123535530.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3ptbV9fMTM3NzQ0NTI5Mg==,size_16,color_FFFFFF,t_70#pic_center"><meta property="og:image" content="https://img-blog.csdnimg.cn/20210423123559468.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3ptbV9fMTM3NzQ0NTI5Mg==,size_16,color_FFFFFF,t_70#pic_center"><meta property="article:published_time" content="2021-04-23T04:38:02.000Z"><meta property="article:modified_time" content="2021-11-25T13:55:37.770Z"><meta property="article:author" content="zhaommmmomo"><meta property="article:tag" content="源码"><meta property="article:tag" content="Spring"><meta property="twitter:card" content="summary"><meta property="twitter:image" content="https://img-blog.csdnimg.cn/2021042312284549.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3ptbV9fMTM3NzQ0NTI5Mg==,size_16,color_FFFFFF,t_70#pic_center"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"http://zhaommmmomo.cn/2021/04/23/SpringIOC%E5%A4%A7%E8%87%B4%E6%B5%81%E7%A8%8B/"},"headline":"SpringIOC大致流程","image":[],"datePublished":"2021-04-23T04:38:02.000Z","dateModified":"2021-11-25T13:55:37.770Z","author":{"@type":"Person","name":"zhaommmmomo"},"publisher":{"@type":"Organization","name":"zmm's blog","logo":{"@type":"ImageObject","url":"http://zhaommmmomo.cn/img/logo.jpg"}},"description":"是什么？​    官方文档的解释是：IoC也称为依赖注入（DI）。在此过程中，对象仅通过构造函数参数，工厂方法的参数或在构造或从工厂方法返回后在对象实例上设置的属性来定义其依赖项（即，与它们一起使用的其他对象） 。然后，容器在创建bean时注入那些依赖项。从本质上讲，此过程是通过使用类的直接构造或诸如服务定位器模式之类的机制来控制其依赖关系的实例化或位置的Bean本身的逆过程（因此，其名称为Con"}</script><link rel="canonical" href="http://zhaommmmomo.cn/2021/04/23/SpringIOC%E5%A4%A7%E8%87%B4%E6%B5%81%E7%A8%8B/"><link rel="alternate" href="/atom.xml" title="zmm&#039;s blog" type="application/atom+xml"><link rel="icon" href="/img/logo.jpg"><link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.2/css/all.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@9.12.0/styles/androidstudio.css"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;600&amp;family=Source+Code+Pro"><link rel="stylesheet" href="/css/default.css"><style>body>.footer,body>.navbar,body>.section{opacity:0}</style><!--!--><!--!--><!--!--><!--!--><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cookieconsent@3.1.1/build/cookieconsent.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lightgallery@1.6.8/dist/css/lightgallery.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/justifiedGallery@3.7.0/dist/css/justifiedGallery.min.css"><!--!--><!--!--><script src="https://cdn.jsdelivr.net/npm/pace-js@1.0.2/pace.min.js"></script><!--!--><!--!--><meta name="generator" content="Hexo 5.4.0"></head><body class="is-3-column"><nav class="navbar navbar-main"><div class="container"><div class="navbar-brand justify-content-center"><a class="navbar-item navbar-logo" href="/"><img src="/img/logo.jpg" alt="zmm&#039;s blog" height="28"></a></div><div class="navbar-menu"><div class="navbar-start"><a class="navbar-item" href="/">首页</a><a class="navbar-item" href="/archives">文章</a><a class="navbar-item" href="/categories">分类</a><a class="navbar-item" href="/tags">标签</a><a class="navbar-item" href="/books">书架</a><a class="navbar-item" href="/paper">论文</a><a class="navbar-item" href="/resume">个人简历</a><a class="navbar-item" href="/about">关于我</a></div><div class="navbar-end"><a class="navbar-item" target="_blank" rel="noopener" title="Download on GitHub" href="https://www.github.com/zhaommmmomo"><i class="fab fa-github"></i></a><a class="navbar-item is-hidden-tablet catalogue" title="目录" href="javascript:;"><i class="fas fa-list-ul"></i></a><a class="navbar-item search" title="搜索" href="javascript:;"><i class="fas fa-search"></i></a></div></div></div></nav><section class="section"><div class="container"><div class="columns"><div class="column order-2 column-main is-8-tablet is-8-desktop is-9-widescreen"><div class="card"><article class="card-content article" role="article"><div class="article-meta is-size-7 is-uppercase level is-mobile"><div class="level-left"><span class="level-item"><time dateTime="2021-04-23T04:38:02.000Z" title="4/23/2021, 12:38:02 PM">2021-04-23</time>发表</span><span class="level-item"> zhaommmmomo </span><span class="level-item"><a class="link-muted" href="/categories/Code/">Code</a><span> / </span><a class="link-muted" href="/categories/Code/Spring/">Spring</a></span><span class="level-item">12 分钟读完 (大约1809个字)</span></div></div><h1 class="title is-3 is-size-4-mobile">SpringIOC大致流程</h1><div class="content"><h2 id="是什么？"><a href="#是什么？" class="headerlink" title="是什么？"></a>是什么？</h2><p>​    官方文档的解释是：IoC也称为依赖注入（DI）。在此过程中，对象仅通过构造函数参数，工厂方法的参数或在构造或从工厂方法返回后在对象实例上设置的属性来定义其依赖项（即，与它们一起使用的其他对象） 。然后，容器在创建bean时注入那些依赖项。从本质上讲，此过程是通过使用类的直接构造或诸如服务定位器模式之类的机制来控制其依赖关系的实例化或位置的Bean本身的逆过程（因此，其名称为Control Inversion）。</p>
+<p>​    简单来说：就是我们将一个个的bean对象交给IoC去管理，他会帮助我们去创建对象实例、填充属性、初始化、添加监听器等过程。</p>
+<span id="more"></span>
+
+
+
+<br>
+
+<br>
+
+<h2 id="类图"><a href="#类图" class="headerlink" title="类图"></a>类图</h2><p>​    我们以常用的ClassPathXmlApplicationContext为例<br><img src="https://img-blog.csdnimg.cn/2021042312284549.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3ptbV9fMTM3NzQ0NTI5Mg==,size_16,color_FFFFFF,t_70#pic_center" alt="在这里插入图片描述"></p>
+<br>
+
+<br>
+
+<h2 id="大致过程"><a href="#大致过程" class="headerlink" title="大致过程"></a>大致过程</h2><p><img src="https://img-blog.csdnimg.cn/20210423122922215.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3ptbV9fMTM3NzQ0NTI5Mg==,size_16,color_FFFFFF,t_70#pic_center"></p>
+<p>​    首先，一个IoC容器应创建一个工厂（DefaultListableBeanFactory），可以使我们读取的资源文件可以存放。</p>
+<p>​    然后，将配置文件通过一个规范（BeanDefinitionReader）加载出来。</p>
+<p>​    接着，是bean对象实例化之前的一些准备（初始化啊、事件处理器、注册组件等）；例如上图中的BeanFactoryPostProcessor、多播器等。</p>
+<p>​    重要的地方来了，创建一个个的非懒加载的成品Bean对象（finishBeanFactoryInitialization方法）。</p>
+<p>​    最后，是一些事件的发布、缓存、销毁等。</p>
+<br>
+
+<br>
+
+
+
+<h2 id="源码分析"><a href="#源码分析" class="headerlink" title="源码分析"></a>源码分析</h2><p>​    从ClassPathXmlApplicationContext开始分析。在它的构造方法中，我们可以看见调用了父类（AbstractApplicationContext类）的构造方法、设置配置文件的加载路径以及核心方法refresh()方法。</p>
+<p><img src="https://img-blog.csdnimg.cn/20210423122941651.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3ptbV9fMTM3NzQ0NTI5Mg==,size_16,color_FFFFFF,t_70#pic_center"></p>
+<br>
+
+
+<p>​    父类AbstractApplicationContext的构造方法</p>
+<p><img src="https://img-blog.csdnimg.cn/202104231229564.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3ptbV9fMTM3NzQ0NTI5Mg==,size_16,color_FFFFFF,t_70#pic_center"></p>
+<br>
+
+
+<p>​    setConfigLocations()方法<br><img src="https://img-blog.csdnimg.cn/20210423123011347.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3ptbV9fMTM3NzQ0NTI5Mg==,size_16,color_FFFFFF,t_70#pic_center"></p>
+<br>
+
+
+<p>​    接下来，我们进入核心方法**refresh()**。</p>
+<p><img src="https://img-blog.csdnimg.cn/20210423123024928.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3ptbV9fMTM3NzQ0NTI5Mg==,size_16,color_FFFFFF,t_70#pic_center"></p>
+<br>
+
+
+<p>​    我们重点看序号2和序号11，其他有兴趣可以自己点进去看看。</p>
+<p>​    obtainFreshBeanFactory()方法</p>
+<p><img src="https://img-blog.csdnimg.cn/20210423123038255.png#pic_center"></p>
+<p>​    <br></p>
+<p>​    跟进refreshBeanFactory()方法，在AbstractRefreshableApplicationContext类中可以找到refreshBeanFactory()这个方法</p>
+<p><img src="https://img-blog.csdnimg.cn/20210423123102181.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3ptbV9fMTM3NzQ0NTI5Mg==,size_16,color_FFFFFF,t_70#pic_center"></p>
+<br>
+
+
+<p>​    createBeanFactory()方法中</p>
+<p><img src="https://img-blog.csdnimg.cn/20210423123124440.png#pic_center"></p>
+<br>
+
+
+<p>​    loadBeanDefinitions()方法，也是委派给子类去实现。</p>
+<p><img src="https://img-blog.csdnimg.cn/20210423123136320.png#pic_center"></p>
+<br>    
+
+<p>我们进去子类AbstractXmlApplicationContext类的loadBeanDefinition()方法。在这里进行了配置文件读取规范的定义，我们继续跟进loadBeanDefinitions()方法。</p>
+<p><img src="https://img-blog.csdnimg.cn/20210423123153275.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3ptbV9fMTM3NzQ0NTI5Mg==,size_16,color_FFFFFF,t_70#pic_center"></p>
+<br>
+
+
+<p>loadBeanDefinitions()方法。传入的可能是个String[]或者Resource[]类型。但是大致流程都差不多：String[]-&gt;String-&gt;Resource[]-&gt;Resource-&gt;Document-&gt;BeanDefinition。这里就不过多深入了，感兴趣可以照这个流程看下去。</p>
+<p><img src="https://img-blog.csdnimg.cn/2021042312342942.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3ptbV9fMTM3NzQ0NTI5Mg==,size_16,color_FFFFFF,t_70#pic_center"></p>
+<br>
+
+
+<p>资源文件加载完成后，我们的BeanFactory差不多就创建好了。接着，我们到IoC最重要的过程，Bean对象（不是懒加载的）的实例化和初始化。这里为什么将实例化和初始化分开说呢，是想更好的帮助理解Bean对象的创建过程。其实Spring中更加的细分了一下，分成了<strong>实例化（createBeanInstance()方法）、填充属性（populateBean()方法）和初始化（initializeBean()方法）。</strong></p>
+<p>​    <strong>实例化</strong>：在堆中开辟了一块空间。属性都是系统默认值。</p>
+<p>​    <strong>初始化</strong>：给属性完成具体的赋值操作，调用具体的初始化方法。</p>
+<p>​    好了，我们进入finishBeanFactoryInitialization()方法，里面你会看到一些对beanFactory的属性设置，其中重点的是preInstantiateSingletons()方，点进去，它会调用DefaultListableBeanFactory的preInstantiateSingletons()方法。</p>
+<p><img src="https://img-blog.csdnimg.cn/20210423123441986.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3ptbV9fMTM3NzQ0NTI5Mg==,size_16,color_FFFFFF,t_70#pic_center"></p>
+<br>
+
+<p>我们可以看到**getBean()**方法，这里就是准备开始进行bean对象的创建了。</p>
+<p>点进去，我们可以看真正执行的是**doGetBean()**方法</p>
+<p><img src="https://img-blog.csdnimg.cn/20210423123455791.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3ptbV9fMTM3NzQ0NTI5Mg==,size_16,color_FFFFFF,t_70#pic_center"></p>
+<br>
+
+<p>doGetBean()方法，就是根据不同的Bean采用不同的创建策略。</p>
+<ol>
+<li><p>如果Bean是<strong>单例</strong>的，则在容器创建之前先从缓存中查找，确保整个容器只存在一个实例对象</p>
+</li>
+<li><p>如果Bean是<strong>原型模式</strong>的，则容器每次都会创建一个新的实例对象</p>
+<ol start="3">
+<li> <strong>指定了Bean的生命周期</strong></li>
+</ol>
+</li>
+</ol>
+<p><img src="https://img-blog.csdnimg.cn/20210423123506408.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3ptbV9fMTM3NzQ0NTI5Mg==,size_16,color_FFFFFF,t_70#pic_center"></p>
+<p><img src="https://img-blog.csdnimg.cn/20210423123521810.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3ptbV9fMTM3NzQ0NTI5Mg==,size_16,color_FFFFFF,t_70#pic_center"></p>
+<br>
+
+
+<p>​    我们进入createBean()，发现还有一个doCreateBean方法()，终于，我们到了真正创建Bean对象的方法。点进去。</p>
+<p><img src="https://img-blog.csdnimg.cn/20210423123535530.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3ptbV9fMTM3NzQ0NTI5Mg==,size_16,color_FFFFFF,t_70#pic_center"></p>
+<br>
+
+
+<p>​    我们发现我们终于找到了之前所说的那三个方法了，创建、填充和初始化。</p>
+<p>​    createBeanInstance()方法返回的是一个BeanWrapper，bean的封装类。</p>
+<p>​    populateBean()则是将bean的一些属性字段进行解析、填充。</p>
+<p>​    在initializeBean()中</p>
+<p><img src="https://img-blog.csdnimg.cn/20210423123559468.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3ptbV9fMTM3NzQ0NTI5Mg==,size_16,color_FFFFFF,t_70#pic_center"></p>
+<p>到此，我们一开始的流程图所有的地方差不多都完成了。其中有些细节方面没点进去看看，主要是大致了解IoC的过程。可以自行debug进去看看。</p>
+</div><div class="article-licensing box"><div class="licensing-title"><p>SpringIOC大致流程</p><p><a href="http://zhaommmmomo.cn/2021/04/23/SpringIOC大致流程/">http://zhaommmmomo.cn/2021/04/23/SpringIOC大致流程/</a></p></div><div class="licensing-meta level is-mobile"><div class="level-left"><div class="level-item is-narrow"><div><h6>作者</h6><p>zhaommmmomo</p></div></div><div class="level-item is-narrow"><div><h6>发布于</h6><p>2021-04-23</p></div></div><div class="level-item is-narrow"><div><h6>更新于</h6><p>2021-11-25</p></div></div><div class="level-item is-narrow"><div><h6>许可协议</h6><p><a class="icons" rel="noopener" target="_blank" title="Attribution" href="http://zhaommmmomo.cn"><i class="icon fab fa-creative-commons-by"></i></a><a class="icons" rel="noopener" target="_blank" title="Download on GitHub" href="https://github.com/zhaommmmomo/blog"><i class="icon fab fa-github"></i></a></p></div></div></div></div></div><div class="article-tags is-size-7 mb-4"><span class="mr-2">#</span><a class="link-muted mr-2" rel="tag" href="/tags/%E6%BA%90%E7%A0%81/">源码</a><a class="link-muted mr-2" rel="tag" href="/tags/Spring/">Spring</a></div><!--!--></article></div><!--!--><nav class="post-navigation mt-4 level is-mobile"><div class="level-start"><a class="article-nav-prev level level-item link-muted" href="/2021/04/24/Spring%E4%B8%ADBean%E7%9A%84%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F/"><i class="level-item fas fa-chevron-left"></i><span class="level-item">Spring中Bean的生命周期</span></a></div><div class="level-end"><a class="article-nav-next level level-item link-muted" href="/2021/04/22/%E5%BE%AA%E7%8E%AF%E4%BE%9D%E8%B5%96/"><span class="level-item">循环依赖</span><i class="level-item fas fa-chevron-right"></i></a></div></nav><!--!--></div><div class="column column-left is-4-tablet is-4-desktop is-3-widescreen  order-1"><div class="card widget" data-type="profile"><div class="card-content"><nav class="level"><div class="level-item has-text-centered flex-shrink-1"><div><figure class="image is-128x128 mx-auto mb-2"><img class="avatar" src="/img/logo.jpg" alt="zhaommmmomo"></figure><p class="title is-size-4 is-block" style="line-height:inherit;">zhaommmmomo</p><p class="is-size-6 is-block">fahaxiki!</p><p class="is-size-6 is-flex justify-content-center"><i class="fas fa-map-marker-alt mr-1"></i><span>Yantai,China</span></p></div></div></nav><nav class="level is-mobile"><div class="level-item has-text-centered is-marginless"><div><p class="heading">文章</p><a href="/archives"><p class="title">13</p></a></div></div><div class="level-item has-text-centered is-marginless"><div><p class="heading">分类</p><a href="/categories"><p class="title">17</p></a></div></div><div class="level-item has-text-centered is-marginless"><div><p class="heading">标签</p><a href="/tags"><p class="title">20</p></a></div></div></nav><div class="level"><a class="level-item button is-primary is-rounded" href="https://zhaommmmomo.cn" target="_blank" rel="noopener">关注我</a></div><div class="level is-mobile is-multiline"><a class="level-item button is-transparent is-marginless" target="_blank" rel="noopener" title="Github" href="https://github.com/zhaommmmomo"><i class="fab fa-github"></i></a></div></div></div><div class="card widget" id="toc" data-type="toc"><div class="card-content"><div class="menu"><h3 class="menu-label">目录</h3><ul class="menu-list"><li><a class="level is-mobile" href="#是什么？"><span class="level-left"><span class="level-item">1</span><span class="level-item">是什么？</span></span></a></li><li><a class="level is-mobile" href="#类图"><span class="level-left"><span class="level-item">2</span><span class="level-item">类图</span></span></a></li><li><a class="level is-mobile" href="#大致过程"><span class="level-left"><span class="level-item">3</span><span class="level-item">大致过程</span></span></a></li><li><a class="level is-mobile" href="#源码分析"><span class="level-left"><span class="level-item">4</span><span class="level-item">源码分析</span></span></a></li></ul></div></div><style>#toc .menu-list > li > a.is-active + .menu-list { display: block; }#toc .menu-list > li > a + .menu-list { display: none; }</style><script src="/js/toc.js" defer></script></div></div><!--!--></div></div></section><footer class="footer"><div class="container"><div class="level"><div class="level-start"><a class="footer-logo is-block mb-2" href="/"><img src="/img/logo.jpg" alt="zmm&#039;s blog" height="28"></a><p class="is-size-7"><span>&copy; 2021 zhaommmmomo</span>  <a target="_blank" rel="noopener" href="https://beian.miit.gov.cn">湘ICP备案2021018362号</a>    <a target="_blank" rel="noopener" href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=43062302000147">湘公网安备43062302000147号</a></p></div><div class="level-end"><div class="field has-addons"><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="GitHub" href="https://github.com/zhaommmmomo"><i class="fab fa-github"></i></a></p></div></div></div></div></footer><script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script><script src="https://cdn.jsdelivr.net/npm/moment@2.22.2/min/moment-with-locales.min.js"></script><script src="https://cdn.jsdelivr.net/npm/clipboard@2.0.4/dist/clipboard.min.js" defer></script><script>moment.locale("zh-CN");</script><script>var IcarusThemeSettings = {
+            article: {
+                highlight: {
+                    clipboard: true,
+                    fold: 'unfolded'
+                }
+            }
+        };</script><script src="/js/column.js"></script><script src="/js/animation.js"></script><a id="back-to-top" title="回到顶端" href="javascript:;"><i class="fas fa-chevron-up"></i></a><script src="/js/back_to_top.js" defer></script><!--!--><!--!--><!--!--><script src="https://cdn.jsdelivr.net/npm/cookieconsent@3.1.1/build/cookieconsent.min.js" defer></script><script>window.addEventListener("load", () => {
+      window.cookieconsent.initialise({
+        type: "info",
+        theme: "edgeless",
+        static: false,
+        position: "bottom-left",
+        content: {
+          message: "此网站使用Cookie来改善您的体验。",
+          dismiss: "知道了！",
+          allow: "允许使用Cookie",
+          deny: "拒绝",
+          link: "了解更多",
+          policy: "Cookie政策",
+          href: "https://www.cookiesandyou.com/",
+        },
+        palette: {
+          popup: {
+            background: "#edeff5",
+            text: "#838391"
+          },
+          button: {
+            background: "#4b81e8"
+          },
+        },
+      });
+    });</script><script src="https://cdn.jsdelivr.net/npm/lightgallery@1.6.8/dist/js/lightgallery.min.js" defer></script><script src="https://cdn.jsdelivr.net/npm/justifiedGallery@3.7.0/dist/js/jquery.justifiedGallery.min.js" defer></script><script>window.addEventListener("load", () => {
+            if (typeof $.fn.lightGallery === 'function') {
+                $('.article').lightGallery({ selector: '.gallery-item' });
+            }
+            if (typeof $.fn.justifiedGallery === 'function') {
+                if ($('.justified-gallery > p > .gallery-item').length) {
+                    $('.justified-gallery > p > .gallery-item').unwrap();
+                }
+                $('.justified-gallery').justifiedGallery();
+            }
+        });</script><!--!--><!--!--><!--!--><!--!--><!--!--><script src="/js/main.js" defer></script><div class="searchbox"><div class="searchbox-container"><div class="searchbox-header"><div class="searchbox-input-container"><input class="searchbox-input" type="text" placeholder="想要查找什么..."></div><a class="searchbox-close" href="javascript:;">×</a></div><div class="searchbox-body"></div></div></div><script src="/js/insight.js" defer></script><script>document.addEventListener('DOMContentLoaded', function () {
+            loadInsight({"contentUrl":"/content.json"}, {"hint":"想要查找什么...","untitled":"(无标题)","posts":"文章","pages":"页面","categories":"分类","tags":"标签"});
+        });</script></body></html>
